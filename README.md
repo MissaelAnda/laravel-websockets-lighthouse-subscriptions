@@ -28,7 +28,7 @@ return [
 
 Or you can change the `channel_manager` to `App\WebSockets\Channels\ChannelManagers\ArrayChannelManager::class` in `config/websockets.php`.
 
-The client implementation can be done using the [WsClient](MissaelAnda/laravel-websockets-lighthouse-subscriptions/resources/js/WsClient.js) like this:
+The client implementation can be done using the [WsClient](resources/js/WsClient.js) like this:
 
 ```js
 import WsClient from 'WsClient.js';
