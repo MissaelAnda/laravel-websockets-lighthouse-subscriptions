@@ -1,4 +1,4 @@
-# Lighhouse laravel websockets
+# Lighthouse laravel websockets
 
 Basic configuration to use [lighthouse's](https://github.com/nuwave/lighthouse) subscriptions with the pusher driver using [beyondcode/laravel-websockets](https://github.com/beyondcode/laravel-websockets).
 
