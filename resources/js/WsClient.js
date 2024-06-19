@@ -1,10 +1,14 @@
 export default class WsClient {
     socketId = null;
+    pingingInterval = null;
     channels = [];
     onConnected = () => { };
     onSubscribed = (channel) => { };
     onUnsubscribed = (channel) => { };
     onMessage = (message) => { };
+    onPing = () => { };
+    onPong = () => { };
+    onDisconnected = (info) => { };
 
     constructor(wsUrl, graphQlUrl = null) {
         this.wsUrl = wsUrl;
@@ -14,6 +18,7 @@ export default class WsClient {
     connect(timeout = 10) {
         this.ws = new WebSocket(this.wsUrl);
         this.ws.onmessage = this.handleMessage;
+        this.ws.onclose = this.disconnected;
 
         return new Promise(async (resolve, reject) => {
             for (let i = 0; i < timeout * 10; i++) {
@@ -28,13 +33,29 @@ export default class WsClient {
         });
     }
 
+    disconnected = (event) => {
+        this.socketId = null;
+        this.channels = [];
+        this.stopPinging();
+        this.onDisconnected(event);
+    }
+
+    disconnect() {
+        this.ws.close();
+    }
+
     handleMessage = (e) => {
         const data = JSON.parse(e.data);
         switch (data.event) {
             case "pusher:connection_established":
                 const payload = JSON.parse(data.data);
                 this.socketId = payload.socket_id;
+                this.startPinging();
                 this.onConnected();
+                break;
+
+            case "pusher:pong":
+                this.onPong();
                 break;
 
             case "pusher_internal:subscription_succeeded":
@@ -90,6 +111,24 @@ export default class WsClient {
                 auth,
             },
         });
+    }
+
+    startPinging() {
+        if (!this.pingingInterval) {
+            this.pingingInterval = setInterval((_) => this.ping(), 30 * 1000); // Ping every 30 seconds
+        }
+    }
+
+    stopPinging() {
+        if (this.pingingInterval) {
+            clearInterval(this.pingingInterval);
+            this.pingingInterval = null;
+        }
+    }
+
+    ping() {
+        this.send({ event: "pusher:ping", data: {} });
+        this.onPing();
     }
 
     unsubscribe(channel) {
