@@ -11,9 +11,21 @@ export default class WsClient {
         this.graphQlUrl = graphQlUrl ?? wsUrl;
     }
 
-    connect() {
+    connect(timeout = 10) {
         this.ws = new WebSocket(this.wsUrl);
         this.ws.onmessage = this.handleMessage;
+
+        return new Promise(async (resolve, reject) => {
+            for (let i = 0; i < timeout * 10; i++) {
+                await new Promise(r => setTimeout(r, 100));
+                if (this.isConnected()) {
+                    resolve(this.socketId);
+                    return;
+                }
+            }
+
+            reject(new Error('Timed out'));
+        });
     }
 
     handleMessage = (e) => {
