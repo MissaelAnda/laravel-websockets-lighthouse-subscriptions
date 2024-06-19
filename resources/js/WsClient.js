@@ -16,6 +16,10 @@ export default class WsClient {
     }
 
     connect(timeout = 10) {
+        if (this.isConnected()) {
+            throw new Error('WebSocket client is already connected.');
+        }
+
         this.ws = new WebSocket(this.wsUrl);
         this.ws.onmessage = this.handleMessage;
         this.ws.onclose = this.disconnected;
@@ -76,6 +80,7 @@ export default class WsClient {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
+                "X-Socket-ID": this.socketId,
                 ...headers,
             },
             body: JSON.stringify({
@@ -93,6 +98,7 @@ export default class WsClient {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
+                "X-Socket-ID": this.socketId,
                 ...headers,
             },
             body: JSON.stringify({
@@ -103,6 +109,8 @@ export default class WsClient {
         data = await response.json();
 
         const auth = data?.auth;
+
+        if (!auth) throw new Error('Failed trying to authorize access.');
 
         this.send({
             event: "pusher:subscribe",
