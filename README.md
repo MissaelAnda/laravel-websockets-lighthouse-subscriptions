@@ -34,7 +34,7 @@ The client implementation can be done using the [WsClient](resources/js/WsClient
 import WsClient from 'WsClient.js';
 
 const ws = new WsClient(
-  "ws://localhost:6001/app/Sembrador",
+  "ws://localhost:6001/app/AppKey",
   "http://localhost:8000/graphql"
 );
 
@@ -49,7 +49,7 @@ ws.onDisconnected = async (info) => {
 }
 
 await ws.connect();
-ws.subscribe(
+await ws.subscribe(
     `
     subscription ($id: ID!) {
         newMessages(id: $id) {
