@@ -37,28 +37,32 @@ const ws = new WsClient(
   "ws://localhost:6001/app/Sembrador",
   "http://localhost:8000/graphql"
 );
-ws.onConnected = () => {
-  ws.subscribe(
-    `
-  subscription ($id: ID!) {
-    newMessages(id: $id) {
-      id
+
+ws.onConnected = console.log
+ws.onSubscribed = (channel) => console.log("Successfully subscribed to " + channel);
+ws.onMessage = console.log
+ws.onUnsuscribed = (channel) => console.log("Unsubscribed from " + channel);
+ws.onDisconnected = async (info) => {
+    if (!info.wasClean) {
+        await ws.connect();
     }
-  }
-  `,
+}
+
+await ws.connect();
+ws.subscribe(
+    `
+    subscription ($id: ID!) {
+        newMessages(id: $id) {
+          id
+        }
+    }
+    `,
     {
       id: 1,
     },
     {
       Authorization: "Bearer token",
     }
-  );
-};
-
-ws.onMessage = console.log
-ws.onSubscribed = (channel) => console.log("Successfully subscribed to " + channel);
-ws.onUnsubscribed = (channel) =>
-  console.log("Successfully unsubscribed from " + channel);
-ws.connect();
+);
 
 ```
